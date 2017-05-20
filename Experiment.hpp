@@ -1,6 +1,8 @@
 #include <string>
 #include <fstream>
 
+#include "Sequence.hpp"
+
 #ifndef EXP_H
 #define EXP_H
 
@@ -19,8 +21,6 @@ public:
 		this->run = run;
 		this->fwd_name = fwd;
 		this->rev_name = rev;
-		this->out_fwd.open(out_fwd);
-		this->out_rev.open(out_rev);
 	};
 
 	Experiment (const Experiment & e) {
@@ -28,8 +28,6 @@ public:
 		this->sample = e.sample;
 		this->fwd_name = e.fwd_name;
 		this->rev_name = e.rev_name;
-		this->out_fwd.open(fwd_name);
-		this->out_rev.open(rev_name);
 	}
 
 	Experiment& operator=(const Experiment& e) {
@@ -37,11 +35,12 @@ public:
 		this->sample = e.sample;
 		this->fwd_name = e.fwd_name;
 		this->rev_name = e.rev_name;
-		this->out_fwd.open(fwd_name);
-		this->out_rev.open(rev_name);
 
 		return *this;
 	}
+
+	void addReads (Sequence fwd, Sequence rev);
+	void closeFile ();
 };
 
 #endif
