@@ -100,7 +100,8 @@ int main (int argc, char *argv[]) {
 	/* --- Demultiplexing --- */
 	// Create directory
 	fs::path dir = fs::path(out_dir);
-	fs::remove_all(dir);
+	if (fs::exists(dir))
+		fs::remove_all(dir);
 	if (mkdir(out_dir.c_str(), 0777)) {
 		cerr << "Impossible to create directory " << out_dir << endl;
 		exit(2);
