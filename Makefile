@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=-c -Wall -std=c++14
-LDFLAGS=
+CFLAGS=-c -Wall -std=c++14 -O3
+LDFLAGS=-lstdc++fs
 SOURCES=$(wildcard *.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=dtd
@@ -8,7 +8,7 @@ EXECUTABLE=dtd
 all: $(SOURCES) $(EXECUTABLE)
     
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+	$(CC) $(OBJECTS) -o $@ $(LDFLAGS)
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@

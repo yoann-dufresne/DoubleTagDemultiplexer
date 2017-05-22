@@ -40,23 +40,20 @@ void demux (string r1_filename, string r2_filename,
 			auto it_fwd = exps.find(r1_name+r2_name);
 			if (it_fwd != exps.end()) {
 				exp_count++;
-				// TODO !!!!!!!!!!!!!!!!
-				// Enregistrer dans les fichiers correspondants
+				it_fwd->second.addReads(r1, r2);
 			} else {
 				auto it_rev = exps.find(r2_name+r1_name);
 				if (it_rev != exps.end()) {
 					exp_count++;
-					// TODO !!!!!!!!!!!!!!!!
-					// Enregistrer dans les fichiers correspondants
+					it_rev->second.addReads(r2, r1);
 				}
 			}
 			
 		}
 
 		total++;
-
-		if (total % 1000 == 0)
-			cout << nbFound << '/' << total << "  " << exp_count << '/' << total << endl;
 	}
-	cout << nbFound << '/' << total << endl;
+	cout << "Total input paired reads: " << total << endl;
+	cout << "Primers found: " << nbFound << endl;
+	cout << "After mistag removing: " << exp_count << endl;
 }

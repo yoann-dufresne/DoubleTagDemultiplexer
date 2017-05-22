@@ -4,6 +4,11 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <cstdio>
+
+#include <sys/stat.h>
+
+#include <experimental/filesystem>
 
 #include "Sequence.hpp"
 #include "Parser.hpp"
@@ -12,10 +17,11 @@
 #include "demultiplexing.hpp"
 
 using namespace std;
+namespace fs = std::experimental::filesystem;
 
 void printHelp () {
 	cout << "./dtd -r1 r1_filename -r2 r2_filename \
--o oligos_filename -t tag_size -e experiments [-d output_directory]" << endl;
+-o oligos_filename -e experiments [-d output_directory]" << endl;
 	cout << "Command line description:" << endl;
 	cout << "\t\e[1m-r1\e[0m: The FASTQ file containing all the reads R1 from \
 a paired end amplicon sequencing." << endl;
@@ -25,7 +31,7 @@ a paired end amplicon sequencing." << endl;
 header line must contain the name of the sequence using the convention \
 <primer_name>-<tag_name>. For example F1-C. The primer can contain the '-' \
 character but nor the tag name." << endl;
-	cout << "\t\e[1m-t or -tag-size\e[0m: The size of the tags in bp." << endl;
+	// cout << "\t\e[1m-t or -tag-size\e[0m: The size of the tags in bp." << endl;
 	cout << "\t\e[1m-e or -experiments\e[0m: The csv file containing the tags by experiment. \
 The csv must have at least 4 columns named run, sample, forward and reverse. \
 These columns corresponds respectively to the run name, the sample name, the forward \
@@ -92,7 +98,19 @@ int main (int argc, char *argv[]) {
 	auto oligos = parseTaggedPrimers(oligos_filename);
 
 	/* --- Demultiplexing --- */
+	// Create directory
+	fs::path dir = fs::path(out_dir);
+	fs::remove_all(dir);
+	if (mkdir(out_dir.c_str(), 0777)) {
+		cerr << "Impossible to create directory " << out_dir << endl;
+		exit(2);
+	}
+
+	// Demultiplex
 	demux (r1_filename, r2_filename, exps, oligos);
+	for (auto it=exps.begin() ; it!=exps.end() ; it++) {
+		it->second.closeFile();
+	}
 
 	return 0;
 }
@@ -213,7 +231,8 @@ map<string, Experiment> parse_experiments(string exp_filename, string out_dir) {
 		if (values.size() < 4)
 			continue;
 
-		string base_filename = out_dir + "/" + values[run_idx] + "_" + values[sample_idx];
+		string base_filename = out_dir + (out_dir[out_dir.size()-1] == '/' ? "" : "/")
+			+ values[run_idx] + "_" + values[sample_idx];
 		Experiment e(values[run_idx], values[sample_idx], values[r1_idx], values[r2_idx],
 			base_filename + "_fwd.fastq", base_filename + "_rev.fastq");
 		exps[e.fwd_name + e.rev_name] = e;

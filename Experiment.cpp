@@ -1,13 +1,13 @@
 #include "Experiment.hpp"
-
+#include <iostream>
 
 using namespace std;
 
 void Experiment::addReads (Sequence fwd, Sequence rev) {
 	if (! this->out_fwd.is_open())
-		this->out_fwd.open(fwd_name);
+		this->out_fwd.open(this->outname_fwd);
 	if (! this->out_rev.is_open())
-		this->out_rev.open(rev_name);
+		this->out_rev.open(this->outname_rev);
 
 	// Save fwd read
 	this->out_fwd << '>' << fwd.header << endl;
