@@ -14,7 +14,28 @@ Gregory B. Gloor, Ruben Hummelen, Jean M. Macklaim, Russell J. Dickson, Andrew D
 ### Inputs
 
 * experiments in a CSV file: The software need a CSV file containing all the experiments. This file must contain at least 4 fields names run, sample, forward and reverse. Run correspond to your illumina run id ; sample, the name of yout sample in the run ; forward and reverse, the names of your tagged primers.  
+  
+Here an example with 2 illumina runs on two sample with 2 primers and 3 tags:  
+
+    run,sample,forward,reverse
+    JAN_2017,st_1,PR1-A,PR2-B
+    JAN_2017,st_2,PR1-B,PR2-C
+    FEB_2017,st_1,PR1-A,PR2-B
+    FEB_2017,st_2,PR1-B,PR2-C
+
 * Primers FASTA file: To complete the CSV, a FASTA file with all the tagged primers is required. Each primer is represented by its name in header and its sequence.  
+  
+Here an example corresponding to the previous CSV example (tagsize: 4bp):  
+
+    >PR1-A
+    ACCTGCCTAGCGTYG
+    >PR1-B
+    GAATGCCTAGCGTYG
+    >PR2-B
+    GAATCTYCAAATCGG
+    >PR2-C
+    ACTACTYCAAATCGG
+
 * R1/R2 FASTQ files: The paired-end FASTQ files outputed by the illumina sequencing machine.
 
 ### Outputs
