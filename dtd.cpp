@@ -8,7 +8,7 @@
 
 #include <sys/stat.h>
 
-#include <experimental/filesystem>
+#include <boost/filesystem.hpp>
 
 #include "Sequence.hpp"
 #include "Parser.hpp"
@@ -17,7 +17,7 @@
 #include "demultiplexing.hpp"
 
 using namespace std;
-namespace fs = std::experimental::filesystem;
+namespace fs=boost::filesystem;
 
 void printHelp () {
 	cout << "./dtd -r1 r1_filename -r2 r2_filename \

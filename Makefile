@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=-c -Wall -std=c++14 -O3
-LDFLAGS=-lstdc++fs
+CFLAGS=-c -Wall -std=c++14 -O3 -lboost_filesystem
+LDFLAGS=-lboost_filesystem -lboost_system -I /usr/include/boost
 SOURCES=$(wildcard *.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=dtd
