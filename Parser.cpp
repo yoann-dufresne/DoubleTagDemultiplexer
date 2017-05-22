@@ -7,7 +7,7 @@ using namespace std;
 
 Parser::Parser (string filename) {
 	this->filename = filename;
-	this->stream = ifstream(filename);
+	this->stream.open(filename);
 	if (!this->stream.is_open()) {
 		cerr << "Impossible to load " << filename << endl;
 		exit(1);
