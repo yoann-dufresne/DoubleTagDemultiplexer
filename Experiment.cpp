@@ -10,16 +10,20 @@ void Experiment::addReads (Sequence fwd, Sequence rev) {
 		this->out_rev.open(this->outname_rev);
 
 	// Save fwd read
-	this->out_fwd << '>' << fwd.header << endl;
+	this->out_fwd << (fwd.quality == "" ? '>' : '@') << fwd.header << endl;
 	this->out_fwd << fwd.sequence << endl;
-	this->out_fwd << '+' << endl;
-	this->out_fwd << fwd.quality << endl;
+	if (fwd.quality != "") {
+		this->out_fwd << '+' << endl;
+		this->out_fwd << fwd.quality << endl;
+	}
 
 	// Save rev read
-	this->out_rev << '>' << rev.header << endl;
+	this->out_rev << (rev.quality == "" ? '>' : '@') << rev.header << endl;
 	this->out_rev << rev.sequence << endl;
-	this->out_rev << '+' << endl;
-	this->out_rev << rev.quality << endl;
+	if (rev.quality != "") {
+		this->out_rev << '+' << endl;
+		this->out_rev << rev.quality << endl;
+	}
 };
 
 void Experiment::closeFile () {
