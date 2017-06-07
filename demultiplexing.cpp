@@ -15,6 +15,8 @@ void demux (string r1_filename, string r2_filename,
 
 	// For all the paired end reads
 	Parser r1_parse (r1_filename), r2_parse(r2_filename);
+	r1_parse.verbose = true;
+	r2_parse.verbose = true;
 	int nbFound = 0;
 	int exp_count = 0;
 	int total = 0;

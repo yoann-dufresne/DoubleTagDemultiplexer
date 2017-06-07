@@ -16,6 +16,7 @@ class Parser {
 
 public:
 	std::string filename;
+	bool verbose;
 
 	/* Init a fasta/q parser on a file */
 	Parser (std::string filename);

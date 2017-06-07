@@ -12,6 +12,7 @@ Parser::Parser (string filename) {
 		cerr << "Impossible to load " << filename << endl;
 		exit(1);
 	}
+	this->verbose = false;
 	getline(this->stream, this->nextLine);
 }
 
@@ -82,12 +83,12 @@ Sequence Parser::nextFastq () {
 		return this->onFileError();
 
 	// Sequence
-	while (this->stream.is_open() && this->nextLine[0] != '@') {
+	do {
 		seq.quality += this->nextLine;
 
 		if (!getline(this->stream, this->nextLine))
 			this->onFileError();
-	}
+	} while (this->stream.is_open() && this->nextLine[0] != '@');
 
 	return seq;
 }
