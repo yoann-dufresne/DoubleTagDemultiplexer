@@ -31,6 +31,10 @@ Sequence Parser::nextSequence () {
 }
 
 Sequence Parser::onFileError () {
+	cerr << 'Unexpected line:' << endl;
+	cerr << this->nextLine() << endl;
+	cerr << 'Skipping...' << endl;
+
 	this->stream.close();
 	return Sequence();
 }
@@ -83,12 +87,10 @@ Sequence Parser::nextFastq () {
 		return this->onFileError();
 
 	// Sequence
-	do {
-		seq.quality += this->nextLine;
+	seq.quality += this->nextLine;
 
-		if (!getline(this->stream, this->nextLine))
-			this->onFileError();
-	} while (this->stream.is_open() && this->nextLine[0] != '@');
+	if (!getline(this->stream, this->nextLine))
+		this->onFileError();
 
 	return seq;
 }
