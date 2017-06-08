@@ -31,9 +31,9 @@ Sequence Parser::nextSequence () {
 }
 
 Sequence Parser::onFileError () {
-	cerr << 'Unexpected line:' << endl;
-	cerr << this->nextLine() << endl;
-	cerr << 'Skipping...' << endl;
+	cerr << "Unexpected line:" << endl;
+	cerr << this->nextLine << endl;
+	cerr << "Skipping..." << endl;
 
 	this->stream.close();
 	return Sequence();
@@ -50,15 +50,19 @@ Sequence Parser::nextFasta () {
 	this->nextLine.erase(this->nextLine.begin());
 	seq.header = this->nextLine;
 	// Read next line
-	if (!getline(this->stream, this->nextLine))
-		return this->onFileError();
+	if (!getline(this->stream, this->nextLine)) {
+		this->stream.close();
+		return Sequence();
+	}
 
 	// Sequence
 	while (this->stream.is_open() && this->nextLine[0] != '>') {
 		seq.sequence += this->nextLine;
 
-		if (!getline(this->stream, this->nextLine))
-			this->onFileError();
+		if (!getline(this->stream, this->nextLine)) {
+			this->stream.close();
+			return seq;
+		}
 	}
 
 	return seq;
@@ -71,8 +75,10 @@ Sequence Parser::nextFastq () {
 	this->nextLine.erase(this->nextLine.begin());
 	seq.header = this->nextLine;
 	// Read next line
-	if (!getline(this->stream, this->nextLine))
-		return this->onFileError();
+	if (!getline(this->stream, this->nextLine)) {
+		this->stream.close();
+		return Sequence();
+	}
 
 	// Sequence
 	while (this->nextLine[0] != '+') {
@@ -89,8 +95,10 @@ Sequence Parser::nextFastq () {
 	// Sequence
 	seq.quality += this->nextLine;
 
-	if (!getline(this->stream, this->nextLine))
-		this->onFileError();
+	if (!getline(this->stream, this->nextLine)) {
+		this->stream.close();
+		return seq;
+	}
 
 	return seq;
 }

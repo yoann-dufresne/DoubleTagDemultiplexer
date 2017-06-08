@@ -8,6 +8,11 @@
 using namespace std;
 
 
+bool mistag = false;
+ofstream mistag_r1;
+ofstream mistag_r2;
+
+
 void demux (string r1_filename, string r2_filename,
 	map<string, Experiment> exps, map<string, Sequence> primers) {
 
@@ -49,13 +54,43 @@ void demux (string r1_filename, string r2_filename,
 					exp_count++;
 					it_rev->second.addReads(r2, r1);
 				}
-			}
-			
+			}			
+		} else if (mistag) {
+			// Save the mistag
+
+			// R1 read
+			mistag_r1 << r1.header << " tag:";
+			mistag_r1 << (it1 == primers.end() ? "unknown" : it1->second.header) << endl;
+			mistag_r1 << r1.sequence << endl << "+" << endl << r1.quality << endl;
+
+			// R2 read
+			mistag_r2 << r2.header << " tag:";
+			mistag_r2 << (it2 == primers.end() ? "unknown" : it2->second.header) << endl;
+			mistag_r2 << r2.sequence << endl << "+" << endl << r2.quality << endl;
 		}
 
 		total++;
 	}
-	cout << "Total input paired reads: " << total << endl;
+
+	// Close mistag files
+	if (mistag) {
+		mistag_r1.close();
+		mistag_r2.close();
+	}
+
+	cout << "Input reads: " << total << endl;
 	cout << "Primers found: " << nbFound << endl;
-	cout << "After mistag removing: " << exp_count << endl;
+	cout << "Unasignable: " << (total-exp_count) << endl;
+}
+
+void activate_mistags (string out_dir) {
+	mistag = true;
+
+	// Add the directory mark
+	if (out_dir[out_dir.length() - 1] != '/')
+		out_dir += "/";
+
+	// Open mistag files
+	mistag_r1.open(out_dir + "mistag_R1.fastq");
+	mistag_r2.open(out_dir + "mistag_R2.fastq");
 }

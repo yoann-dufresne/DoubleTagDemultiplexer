@@ -38,6 +38,9 @@ These columns corresponds respectively to the run name, the sample name, the for
 taged primer name of the experiment and the reverse." << endl;
 	cout << "\t\e[1m-d or -directory\e[0m: The directory where all the output FASTQ by \
 by experiment will be created. By default this is the current directory." << endl;
+	cout << "/t/e[1m-m or -mistag\e[0m: Two files named mistag_R1.fastq and \
+mistag_R2.fastq will be created with non assigned read pairs. The primer names will be \
+added to the end of the read headers." << endl;
 }
 
 map<string, Experiment> parse_experiments(string exp_filename, string out_dir);
@@ -50,6 +53,7 @@ int main (int argc, char *argv[]) {
 	string oligos_filename;
 	int tag_size = -1;
 	string out_dir = "./";
+	bool mistags = false;
 
 	if (argc == 1) {
 		printHelp();
@@ -82,6 +86,10 @@ int main (int argc, char *argv[]) {
 		} else if (arg == "-d" || arg == "-directory") {
 			arg = string(argv[++idx]);
 			out_dir = arg;
+			if (out_dir[0] != '/')
+				out_dir = "./" + out_dir;
+		} else if (arg == "-m" || arg == "-mistag") {
+			mistags = true;
 		} else {
 			cerr << "No argument called " << arg << endl;
 			return 0;
@@ -106,6 +114,9 @@ int main (int argc, char *argv[]) {
 			exit(2);
 		}
 
+	// Mistage saving
+	if (mistags)
+		activate_mistags (out_dir);
 	// Demultiplex
 	demux (r1_filename, r2_filename, exps, oligos);
 	for (auto it=exps.begin() ; it!=exps.end() ; it++) {
