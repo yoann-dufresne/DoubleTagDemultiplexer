@@ -46,7 +46,9 @@ To not fill your current directory with many FASTQ files, you can define an outp
 
 ### Command line
 
-    ./dtd -r1 <r1_filename.fastq> -r2 <r2_filename.fastq> -o <oligos_filename.fasta> -e <experiments.csv> [-d output_directory]
+    ./dtd -r1 <r1_filename.fastq> -r2 <r2_filename.fastq> -o <oligos_filename.fasta> -e <experiments.csv> [-d output_directory] [-m]
+    
+-m : Output unasigned reads in fastq files.
 
 ## Download and compile
 
