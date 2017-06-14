@@ -47,7 +47,9 @@ void demux (string r1_filename, string r2_filename,
 			// Triming primers
 			if (trim) {
 				r1.sequence = r1.sequence.substr(p1.sequence.length());
+				r1.quality = r1.quality.substr(p1.sequence.length());
 				r2.sequence = r2.sequence.substr(p2.sequence.length());
+				r2.quality = r2.quality.substr(p2.sequence.length());
 			}
 
 			// R1 == fwd
