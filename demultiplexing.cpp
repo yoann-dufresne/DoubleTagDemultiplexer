@@ -9,6 +9,7 @@ using namespace std;
 
 
 bool mistag = false;
+bool trim = false;
 ofstream mistag_r1;
 ofstream mistag_r2;
 
@@ -40,16 +41,22 @@ void demux (string r1_filename, string r2_filename,
 		if (it1 != primers.end() && it2 != primers.end()) {
 			nbFound++;
 
-			string r1_name = it1->second.header;
-			string r2_name = it2->second.header;
+			Sequence p1 = it1->second;
+			Sequence p2 = it2->second;
+
+			// Triming primers
+			if (trim) {
+				r1.sequence = r1.sequence.substr(p1.sequence.length());
+				r2.sequence = r2.sequence.substr(p2.sequence.length());
+			}
 
 			// R1 == fwd
-			auto it_fwd = exps.find(r1_name+r2_name);
+			auto it_fwd = exps.find(p1.header+p2.header);
 			if (it_fwd != exps.end()) {
 				exp_count++;
 				it_fwd->second.addReads(r1, r2);
 			} else {
-				auto it_rev = exps.find(r2_name+r1_name);
+				auto it_rev = exps.find(p2.header+p1.header);
 				if (it_rev != exps.end()) {
 					exp_count++;
 					it_rev->second.addReads(r2, r1);
@@ -59,12 +66,12 @@ void demux (string r1_filename, string r2_filename,
 			// Save the mistag
 
 			// R1 read
-			mistag_r1 << r1.header << " tag:";
+			mistag_r1 << r1.header << ";tag:";
 			mistag_r1 << (it1 == primers.end() ? "unknown" : it1->second.header) << endl;
 			mistag_r1 << r1.sequence << endl << "+" << endl << r1.quality << endl;
 
 			// R2 read
-			mistag_r2 << r2.header << " tag:";
+			mistag_r2 << r2.header << ";tag:";
 			mistag_r2 << (it2 == primers.end() ? "unknown" : it2->second.header) << endl;
 			mistag_r2 << r2.sequence << endl << "+" << endl << r2.quality << endl;
 		}
@@ -93,4 +100,8 @@ void activate_mistags (string out_dir) {
 	// Open mistag files
 	mistag_r1.open(out_dir + "mistag_R1.fastq");
 	mistag_r2.open(out_dir + "mistag_R2.fastq");
+}
+
+void activate_triming () {
+	trim = true;
 }

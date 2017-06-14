@@ -23,7 +23,7 @@ Here an example with 2 illumina runs on two sample with 2 primers and 3 tags:
     FEB_2017,st_1,PR1-A,PR2-B
     FEB_2017,st_2,PR1-B,PR2-C
 
-* Primers FASTA file: To complete the CSV, a FASTA file with all the tagged primers is required. Each primer is represented by its name in header and its sequence.  
+* Primers FASTA file: To complete the CSV, a FASTA file with all the tagged primers is required. Each primer is represented by its name in header and its sequence. The primers can include IUPAC codes.  
   
 Here an example corresponding to the previous CSV example (tagsize: 4bp):  
 
@@ -46,9 +46,13 @@ To not fill your current directory with many FASTQ files, you can define an outp
 
 ### Command line
 
-    ./dtd -r1 <r1_filename.fastq> -r2 <r2_filename.fastq> -o <oligos_filename.fasta> -e <experiments.csv> [-d output_directory] [-m]
-    
--m : Output unasigned reads in fastq files.
+    ./dtd -r1 <r1_filename.fastq> -r2 <r2_filename.fastq> -o <oligos_filename.fasta> -e <experiments.csv> [options]
+
+### Options
+
+* **-d output_directory**: Write all the demux files in the directory. If the directory is not present, it is created.
+* **-m**: Write unassigned reads in files named mistag_R1.fastq (_R2).
+* **-t**: Trim the primers from the sequence.
 
 ## Download and compile
 
