@@ -34,6 +34,10 @@ void Experiment::closeFile () {
 		this->out_rev.open(this->outname_rev);
 	}
 
+	// Print reads by sample
+	cout << this->outname_fwd << " and " << this->outname_rev << ": " << this->nbReads << " reads" << endl;
+	
+
 	if (this->out_fwd.is_open())
 		this->out_fwd.close();
 	if (this->out_rev.is_open())
