@@ -121,9 +121,6 @@ int main (int argc, char *argv[]) {
 	
 	// Demultiplex
 	demux (r1_filename, r2_filename, exps, oligos);
-	for (auto it=exps.begin() ; it!=exps.end() ; it++) {
-		it->second.closeFile();
-	}
 
 	return 0;
 }

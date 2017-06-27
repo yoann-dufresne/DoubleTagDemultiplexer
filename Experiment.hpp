@@ -18,6 +18,8 @@ public:
 	std::ofstream out_fwd;
 	std::ofstream out_rev;
 
+	int nbReads;
+
 	Experiment() {};
 	Experiment(std::string run, std::string sample, std::string fwd_tag, std::string rev_tag,
 		std::string out_fwd, std::string out_rev) {
@@ -26,6 +28,7 @@ public:
 		this->rev_name = rev_tag;
 		this->outname_fwd = out_fwd;
 		this->outname_rev = out_rev;
+		this->nbReads = 0;
 	};
 
 	Experiment (const Experiment & e) {
@@ -35,6 +38,7 @@ public:
 		this->rev_name = e.rev_name;
 		this->outname_fwd = e.outname_fwd;
 		this->outname_rev = e.outname_rev;
+		this->nbReads = e.nbReads;
 	}
 
 	Experiment& operator=(const Experiment& e) {
@@ -44,6 +48,7 @@ public:
 		this->rev_name = e.rev_name;
 		this->outname_fwd = e.outname_fwd;
 		this->outname_rev = e.outname_rev;
+		this->nbReads = e.nbReads;
 
 		return *this;
 	}

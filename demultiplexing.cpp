@@ -81,6 +81,10 @@ void demux (string r1_filename, string r2_filename,
 		total++;
 	}
 
+	// Close files
+	for (auto it=exps.begin() ; it!=exps.end() ; it++)
+		it->second.closeFile();
+
 	// Close mistag files
 	if (mistag) {
 		mistag_r1.close();
