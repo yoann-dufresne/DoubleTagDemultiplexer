@@ -27,12 +27,12 @@ void printHelp () {
 a paired end amplicon sequencing." << endl;
 	cout << "\t\e[1m-r2\e[0m: The FASTQ file containing all the reads R2 from \
 a paired end amplicon sequencing." << endl;
-	cout << "\t\e[1m-o or -oligos\e[0m: The FASTA file containing all the tag-primer pairs. The \
+	cout << "\t\e[1m-p or -primers\e[0m: The FASTA file containing all the tag-primer pairs. The \
 header line must contain the name of the sequence using the convention \
 <primer_name>-<tag_name>. For example F1-C. The primer can contain the '-' \
 character but nor the tag name." << endl;
 	// cout << "\t\e[1m-t or -tag-size\e[0m: The size of the tags in bp." << endl;
-	cout << "\t\e[1m-e or -experiments\e[0m: The csv file containing the tags by experiment. \
+	cout << "\t\e[1m-l or -libraries\e[0m: The csv file containing the tags for the libraries and samples. \
 The csv must have at least 4 columns named run, sample, forward and reverse. \
 These columns corresponds respectively to the run name, the sample name, the forward \
 taged primer name of the experiment and the reverse." << endl;
@@ -42,9 +42,10 @@ by experiment will be created. By default this is the current directory." << end
 mistag_R2.fastq will be created with non assigned read pairs. The primer names will be \
 added to the end of the read headers." << endl;
 	cout << "\t\e[1m-t or -trim\e[0m: Trim the primers from the sequence." << endl;
+	cout << "\t\e[1m-rl or -restrict-library\e[0m: Restrict the demultiplexing to only one library." << endl;
 }
 
-map<string, Experiment> parse_experiments(string exp_filename, string out_dir);
+map<string, Experiment> parse_experiments(string exp_filename, string out_dir, string restriction);
 map<string, Sequence> parseTaggedPrimers (string filename);
 
 int main (int argc, char *argv[]) {
@@ -53,6 +54,7 @@ int main (int argc, char *argv[]) {
 	string exp_filename;
 	string oligos_filename;
 	string out_dir = "./";
+	string restricted = "";
 	bool mistags = false;
 	bool trim = false;
 
@@ -74,10 +76,10 @@ int main (int argc, char *argv[]) {
 		} else if (arg == "-r2") {
 			arg = string(argv[++idx]);
 			r2_filename = arg;
-		} else if (arg == "-o" || arg == "-oligos") {
+		} else if (arg == "-p" || arg == "-primers") {
 			arg = string(argv[++idx]);
 			oligos_filename = arg;
-		} else if (arg == "-e" || arg == "-experiment") {
+		} else if (arg == "-l" || arg == "-libraries") {
 			arg = string(argv[++idx]);
 			exp_filename = arg;
 		} else if (arg == "-d" || arg == "-directory") {
@@ -89,6 +91,8 @@ int main (int argc, char *argv[]) {
 			mistags = true;
 		} else if (arg == "-t" || arg == "-trim") {
 			trim = true;
+		} else if (arg == "-rl" || arg == "-restrict-library") {
+			restricted = string(argv[++idx]);
 		} else {
 			cerr << "No argument called " << arg << endl;
 			return 0;
@@ -101,7 +105,7 @@ int main (int argc, char *argv[]) {
 	}
 
 	/* --- Loading the tags --- */
-	auto exps = parse_experiments(exp_filename, out_dir);
+	auto exps = parse_experiments(exp_filename, out_dir, restricted);
 	auto oligos = parseTaggedPrimers(oligos_filename);
 
 	/* --- Demultiplexing --- */
@@ -188,7 +192,7 @@ vector<Sequence> expandWithIupacCode (Sequence & seq, map<char, string> & iupac,
 	return expanded;
 }
 
-map<string, Experiment> parse_experiments(string exp_filename, string out_dir) {
+map<string, Experiment> parse_experiments(string exp_filename, string out_dir, string restriction) {
 	ifstream file (exp_filename);
 
 	map<string, Experiment> exps;
@@ -238,7 +242,7 @@ map<string, Experiment> parse_experiments(string exp_filename, string out_dir) {
 		getline(file, line);
 		vector<string> values = split(line, ",");
 
-		if (values.size() < 4)
+		if (values.size() < 4 || (restriction != "" && values[run_idx] != restriction))
 			continue;
 
 		string base_filename = out_dir + (out_dir[out_dir.size()-1] == '/' ? "" : "/")

@@ -46,13 +46,14 @@ To not fill your current directory with many FASTQ files, you can define an outp
 
 ### Command line
 
-    ./dtd -r1 <r1_filename.fastq> -r2 <r2_filename.fastq> -o <oligos_filename.fasta> -e <experiments.csv> [options]
+    ./dtd -r1 <r1_filename.fastq> -r2 <r2_filename.fastq> -p <primers_filename.fasta> -l <libraries.csv> [options]
 
 ### Options
 
 * **-d output_directory**: Write all the demux files in the directory. If the directory is not present, it is created.
 * **-m**: Write unassigned reads in files named mistag_R1.fastq (_R2).
 * **-t**: Trim the primers from the sequence.
+* **-rl lib_name**: Restrict the demultiplexing to only one library.
 
 ## Download and compile
 
