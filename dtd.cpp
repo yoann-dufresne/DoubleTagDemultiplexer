@@ -245,8 +245,12 @@ map<string, Experiment> parse_experiments(string exp_filename, string out_dir, s
 		if (values.size() < 4 || (restriction != "" && values[run_idx] != restriction))
 			continue;
 
+		string short_filename = exp_filename.substr(0, exp_filename.find_last_of("."));
+		if (short_filename.find_last_of("/") != string::npos)
+			short_filename = short_filename.substr(short_filename.find_last_of("/"));
+
 		string base_filename =  out_dir + (out_dir[out_dir.size()-1] == '/' ? "" : "/")
-			+ exp_filename.substr(0, exp_filename.find_last_of(".")) + '_' + values[run_idx] + "_" + values[sample_idx];
+			+ short_filename + '_' + values[run_idx] + "_" + values[sample_idx];
 		Experiment e(values[run_idx], values[sample_idx], values[r1_idx], values[r2_idx],
 			base_filename + "_fwd.fastq", base_filename + "_rev.fastq");
 		exps[e.fwd_name + e.rev_name] = e;
