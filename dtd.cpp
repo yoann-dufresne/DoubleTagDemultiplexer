@@ -95,7 +95,7 @@ int main (int argc, char *argv[]) {
 			restricted = string(argv[++idx]);
 		} else {
 			cerr << "No argument called " << arg << endl;
-			return 0;
+			return 1;
 		}
 	}
 

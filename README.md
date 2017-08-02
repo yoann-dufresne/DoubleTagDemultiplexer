@@ -57,7 +57,8 @@ To not fill your current directory with many FASTQ files, you can define an outp
 
 ## Download and compile
 
-The software is designed to compile on a unix system (linux or macOS).  
+The software is designed to compile on a unix system (linux or macOS).
+The **boost library** is needed [http://www.boost.org](http://www.boost.org/).  
 
 ```bash
 git clone git@github.com:yoann-dufresne/DoubleTagDemultiplexer.git DTD  
