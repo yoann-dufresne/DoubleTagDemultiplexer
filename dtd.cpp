@@ -21,7 +21,7 @@ namespace fs=boost::filesystem;
 
 void printHelp () {
 	cout << "./dtd -r1 r1_filename -r2 r2_filename \
--o oligos_filename -e experiments [-d output_directory]" << endl;
+-p primers_filename -e experiments [-d output_directory]" << endl;
 	cout << "Command line description:" << endl;
 	cout << "\t\e[1m-r1\e[0m: The FASTQ file containing all the reads R1 from \
 a paired end amplicon sequencing." << endl;
@@ -41,22 +41,24 @@ by experiment will be created. By default this is the current directory." << end
 	cout << "\t\e[1m-m or -mistag\e[0m: Two files named mistag_R1.fastq and \
 mistag_R2.fastq will be created with non assigned read pairs. The primer names will be \
 added to the end of the read headers." << endl;
-	cout << "\t\e[1m-t or -trim\e[0m: Trim the primers from the sequence." << endl;
+	cout << "\t\e[1m-t or -trim\e[0m: Trim the primers from the sequences." << endl;
+	cout << "\t\e[1m-e or -errors\e[0m: A value representing the number of errors allowed in the primers." << endl;
 	cout << "\t\e[1m-rl or -restrict-library\e[0m: Restrict the demultiplexing to only one library." << endl;
 }
 
 map<string, Experiment> parse_experiments(string exp_filename, string out_dir, string restriction);
-map<string, Sequence> parseTaggedPrimers (string filename);
+vector<Sequence> parseTaggedPrimers (string filename);
 
 int main (int argc, char *argv[]) {
 	string r1_filename;
 	string r2_filename;
 	string exp_filename;
-	string oligos_filename;
+	string primers_filename;
 	string out_dir = "./";
 	string restricted = "";
 	bool mistags = false;
 	bool trim = false;
+	uint e = 0;
 
 	if (argc == 1) {
 		printHelp();
@@ -78,7 +80,7 @@ int main (int argc, char *argv[]) {
 			r2_filename = arg;
 		} else if (arg == "-p" || arg == "-primers") {
 			arg = string(argv[++idx]);
-			oligos_filename = arg;
+			primers_filename = arg;
 		} else if (arg == "-l" || arg == "-libraries") {
 			arg = string(argv[++idx]);
 			exp_filename = arg;
@@ -91,6 +93,8 @@ int main (int argc, char *argv[]) {
 			mistags = true;
 		} else if (arg == "-t" || arg == "-trim") {
 			trim = true;
+		} else if (arg == "-e" || arg == "-errors") {
+			e = atoi(argv[++idx]);
 		} else if (arg == "-rl" || arg == "-restrict-library") {
 			restricted = string(argv[++idx]);
 		} else {
@@ -99,14 +103,14 @@ int main (int argc, char *argv[]) {
 		}
 	}
 
-	if (r1_filename == "" || r2_filename == "" || exp_filename == "" || oligos_filename == "") {
+	if (r1_filename == "" || r2_filename == "" || exp_filename == "" || primers_filename == "") {
 		cerr << "Wrong command line" << endl;
 		return 1;
 	}
 
 	/* --- Loading the tags --- */
 	auto exps = parse_experiments(exp_filename, out_dir, restricted);
-	auto oligos = parseTaggedPrimers(oligos_filename);
+	auto primers = parseTaggedPrimers(primers_filename);
 
 	/* --- Demultiplexing --- */
 	// Create directory
@@ -124,7 +128,7 @@ int main (int argc, char *argv[]) {
 		activate_triming ();
 	
 	// Demultiplex
-	demux (r1_filename, r2_filename, exps, oligos);
+	demux (r1_filename, r2_filename, exps, primers, e);
 
 	return 0;
 }
@@ -143,53 +147,6 @@ vector<string> split (string word, string delim) {
 	words.push_back(word);
 
 	return words;
-}
-
-map<char, string> getIupac () {
-	map<char, string> iupac;
-
-	iupac['A'] = "A";
-	iupac['C'] = "C";
-	iupac['T'] = "T";
-	iupac['G'] = "G";
-	iupac['R'] = "AG";
-	iupac['Y'] = "CT";
-	iupac['S'] = "GC";
-	iupac['W'] = "AT";
-	iupac['K'] = "GT";
-	iupac['M'] = "AC";
-	iupac['B'] = "CGT";
-	iupac['D'] = "AGT";
-	iupac['H'] = "ACT";
-	iupac['V'] = "ACG";
-	iupac['N'] = "ACGT";
-
-	return iupac;
-}
-
-/* Recursively split the sequence into multiple sequences, each time that a degenerate
- * nucleotide is encountered
- */
-vector<Sequence> expandWithIupacCode (Sequence & seq, map<char, string> & iupac, int startIdx) {
-	vector<Sequence> expanded;
-
-	for (uint idx=startIdx ; idx<seq.sequence.size() ; idx++) {
-		auto iVal = iupac[seq.sequence[idx]];
-
-		if (iVal.size() > 1) {
-			for (char c : iVal) {
-				Sequence copy = Sequence(seq);
-				copy.sequence[idx] = c;
-				vector<Sequence> recur = expandWithIupacCode(copy, iupac, idx+1);
-				expanded.insert(expanded.end(), recur.begin(), recur.end());
-			}
-		}
-	}
-
-	if (expanded.size() == 0)
-		expanded.push_back(seq);
-
-	return expanded;
 }
 
 map<string, Experiment> parse_experiments(string exp_filename, string out_dir, string restriction) {
@@ -260,28 +217,15 @@ map<string, Experiment> parse_experiments(string exp_filename, string out_dir, s
 }
 
 
-map<string, Sequence> parseTaggedPrimers (string filename) {
-	map<string, Sequence> oligos;
+vector<Sequence> parseTaggedPrimers (string filename) {
+	vector<Sequence> primers;
 
-	uint minSize = 1000000000;
-	vector<Sequence> seqs;
 	Parser fasta (filename);
 	while (fasta.hasNext()) {
 		Sequence seq = fasta.nextSequence();
-		if (seq.sequence.size() < minSize)
-			minSize = seq.sequence.size();
-		seqs.push_back(seq);
+		primers.push_back(seq);
 	}
 
-	auto iupac = getIupac();
-	for (Sequence seq : seqs) {
-		vector<Sequence> expanded = expandWithIupacCode(seq, iupac, 0);
-
-		for (Sequence & exp : expanded) {
-			oligos[exp.sequence.substr(0, minSize)] = seq;
-		}
-	}
-
-	return oligos;
+	return primers;
 }
 

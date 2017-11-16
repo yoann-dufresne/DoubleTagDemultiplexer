@@ -1,8 +1,10 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #include "demultiplexing.hpp"
 #include "Parser.hpp"
+#include "edit.hpp"
 
 
 using namespace std;
@@ -14,10 +16,65 @@ ofstream mistag_r1;
 ofstream mistag_r2;
 
 
-void demux (string r1_filename, string r2_filename,
-	map<string, Experiment> exps, map<string, Sequence> primers) {
+vector<int> find_primers (const vector<Sequence> & primers, const string & r1, const string & r2, const uint errors) {
+	vector<int> locations;
+	string reads[2]; reads[0] = r1; reads[1] = r2;
 
-	int split_size = primers.begin()->first.size();
+	for (string & read : reads) {
+		// cout << read << endl;
+		bool found = false;
+		int primer_idx = -1;
+
+		for (auto & primer : primers) {
+			primer_idx++;
+
+			string prim_seq = primer.sequence;
+			// cout << "   " << prim_seq << endl;
+
+			// Get the begining of the sequence to perform alignment
+			string read_start = read.substr(0, prim_seq.length());
+			// Align
+			compute_matrix(prim_seq, read_start);
+
+			if (get_distance() <= errors) {
+				// cout << get_alignment(prim_seq, read_start);
+
+				// Add the primer found in the result.
+				locations.push_back(primer_idx);
+
+				// Compute the position to trim
+				string symbols = get_align_symbols(prim_seq, read_start);
+				// Compute global gaps to trim at the right place
+				int gaps = 0;
+				for (uint idx=0 ; idx<symbols.length() ; idx++)
+					if (symbols[idx] == '_')
+						gaps--;
+					else if (symbols[idx] == '-')
+						gaps++;
+				locations.push_back(prim_seq.length()+gaps);
+				// cout << gaps << endl;
+
+				// Stop the primer research for this read
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			// cout << "Wrong primers !!!!!!!!!!!!!!!!!!" << endl << endl << endl << endl << endl << endl << endl << endl << endl;
+			locations.push_back(-1);
+			locations.push_back(-1);
+		}
+	}
+	// cout << endl;
+
+	return locations;
+}
+
+
+void demux (string r1_filename, string r2_filename,
+	map<string, Experiment> exps,
+	vector<Sequence> primers, uint errors) {
 
 	// For all the paired end reads
 	Parser r1_parse (r1_filename), r2_parse(r2_filename);
@@ -31,25 +88,24 @@ void demux (string r1_filename, string r2_filename,
 		r1 = r1_parse.nextSequence();
 		r2 = r2_parse.nextSequence();
 
-		// Primers
-		string s1, s2;
-		s1 = r1.sequence.substr(0, split_size);
-		s2 = r2.sequence.substr(0, split_size);
+		// Compute distances
+		vector<int> found = find_primers(primers, r1.sequence, r2.sequence, errors);
 
-		auto it1 = primers.find(s1);
-		auto it2 = primers.find(s2);
-		if (it1 != primers.end() && it2 != primers.end()) {
+		int idx1 = found[0];
+		int idx2 = found[2];
+
+		if (idx1 != -1 && idx2 != -1) {
 			nbFound++;
 
-			Sequence p1 = it1->second;
-			Sequence p2 = it2->second;
+			Sequence p1 = primers[idx1];
+			Sequence p2 = primers[idx2];
 
 			// Triming primers
 			if (trim) {
-				r1.sequence = r1.sequence.substr(p1.sequence.length());
-				r1.quality = r1.quality.substr(p1.sequence.length());
-				r2.sequence = r2.sequence.substr(p2.sequence.length());
-				r2.quality = r2.quality.substr(p2.sequence.length());
+				r1.sequence = r1.sequence.substr(found[1]);
+				r1.quality = r1.quality.substr(found[1]);
+				r2.sequence = r2.sequence.substr(found[3]);
+				r2.quality = r2.quality.substr(found[3]);
 			}
 
 			// R1 == fwd
@@ -69,12 +125,12 @@ void demux (string r1_filename, string r2_filename,
 
 			// R1 read
 			mistag_r1 << r1.header << ";tag:";
-			mistag_r1 << (it1 == primers.end() ? "unknown" : it1->second.header) << endl;
+			mistag_r1 << (idx1 == -1 ? "unknown" : primers[idx1].header) << endl;
 			mistag_r1 << r1.sequence << endl << "+" << endl << r1.quality << endl;
 
 			// R2 read
 			mistag_r2 << r2.header << ";tag:";
-			mistag_r2 << (it2 == primers.end() ? "unknown" : it2->second.header) << endl;
+			mistag_r2 << (idx2 == -1 ? "unknown" : primers[idx2].header) << endl;
 			mistag_r2 << r2.sequence << endl << "+" << endl << r2.quality << endl;
 		}
 
