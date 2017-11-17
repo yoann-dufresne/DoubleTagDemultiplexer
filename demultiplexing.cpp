@@ -21,26 +21,27 @@ vector<int> find_primers (const vector<Sequence> & primers, const string & r1, c
 	string reads[2]; reads[0] = r1; reads[1] = r2;
 
 	for (string & read : reads) {
-		// cout << read << endl;
-		bool found = false;
 		int primer_idx = -1;
+		uint min_dist = errors+1;
+
+		int primer_selected = -1;
+		int position = -1;
 
 		for (auto & primer : primers) {
 			primer_idx++;
 
 			string prim_seq = primer.sequence;
-			// cout << "   " << prim_seq << endl;
 
 			// Get the begining of the sequence to perform alignment
 			string read_start = read.substr(0, prim_seq.length());
 			// Align
 			compute_matrix(prim_seq, read_start);
 
-			if (get_distance() <= errors) {
-				// cout << get_alignment(prim_seq, read_start);
-
+			uint dist = get_distance();
+			if (dist <= errors && dist < min_dist) {
 				// Add the primer found in the result.
-				locations.push_back(primer_idx);
+				primer_selected = primer_idx;
+				min_dist = dist;
 
 				// Compute the position to trim
 				string symbols = get_align_symbols(prim_seq, read_start);
@@ -51,22 +52,13 @@ vector<int> find_primers (const vector<Sequence> & primers, const string & r1, c
 						gaps--;
 					else if (symbols[idx] == '-')
 						gaps++;
-				locations.push_back(prim_seq.length()+gaps);
-				// cout << gaps << endl;
-
-				// Stop the primer research for this read
-				found = true;
-				break;
+				position = prim_seq.length()+gaps;
 			}
 		}
 
-		if (!found) {
-			// cout << "Wrong primers !!!!!!!!!!!!!!!!!!" << endl << endl << endl << endl << endl << endl << endl << endl << endl;
-			locations.push_back(-1);
-			locations.push_back(-1);
-		}
+		locations.push_back(primer_selected);
+		locations.push_back(position);
 	}
-	// cout << endl;
 
 	return locations;
 }
