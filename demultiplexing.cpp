@@ -64,6 +64,17 @@ vector<int> find_primers (const vector<Sequence> & primers, const string & r1, c
 }
 
 
+void write_mistag (Sequence & s1, Sequence & s2, string tag1, string tag2) {
+	// R1 read
+	mistag_r1 << s1.header << ";tag:" << tag1 << endl;
+	mistag_r1 << s1.sequence << endl << "+" << endl << s1.quality << endl;
+
+	// R2 read
+	mistag_r2 << s2.header << ";tag:" << tag2 << endl;
+	mistag_r2 << s2.sequence << endl << "+" << endl << s2.quality << endl;
+}
+
+
 void demux (string r1_filename, string r2_filename,
 	map<string, Experiment> exps,
 	vector<Sequence> primers, uint errors) {
@@ -110,20 +121,17 @@ void demux (string r1_filename, string r2_filename,
 				if (it_rev != exps.end()) {
 					exp_count++;
 					it_rev->second.addReads(r2, r1);
+				} else {
+					write_mistag(r1, r2, primers[idx1].header, primers[idx2].header);
 				}
 			}			
 		} else if (mistag) {
 			// Save the mistag
-
-			// R1 read
-			mistag_r1 << r1.header << ";tag:";
-			mistag_r1 << (idx1 == -1 ? "unknown" : primers[idx1].header) << endl;
-			mistag_r1 << r1.sequence << endl << "+" << endl << r1.quality << endl;
-
-			// R2 read
-			mistag_r2 << r2.header << ";tag:";
-			mistag_r2 << (idx2 == -1 ? "unknown" : primers[idx2].header) << endl;
-			mistag_r2 << r2.sequence << endl << "+" << endl << r2.quality << endl;
+			write_mistag(
+				r1, r2, 
+				idx1 == -1 ? "unknown" : primers[idx1].header,
+				idx2 == -1 ? "unknown" : primers[idx2].header
+			);
 		}
 
 		total++;
