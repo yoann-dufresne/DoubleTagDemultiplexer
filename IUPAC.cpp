@@ -61,7 +61,18 @@ uint iupac_2_uint (const char & c) {
 }
 
 bool iupac_comp(const char & a, const char & b) {
-	return matrix[iupac_2_uint(a)-1][iupac_2_uint(b)-1];
+	uint iupac_a = iupac_2_uint(a);
+	uint iupac_b = iupac_2_uint(b);
+
+	if (iupac_a == 0) {
+		cerr << a << " is not a IUPAC symbol !" << endl;
+		exit (1);
+	} else if (iupac_b == 0) {
+		cerr << b << " is not a IUPAC symbol !" << endl;
+		exit (1);
+	}
+
+	return matrix[iupac_a -1][iupac_b -1];
 }
 
 

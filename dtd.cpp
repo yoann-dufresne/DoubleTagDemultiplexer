@@ -126,7 +126,7 @@ int main (int argc, char *argv[]) {
 		activate_mistags (out_dir);
 	if (trim)
 		activate_triming ();
-	
+
 	// Demultiplex
 	demux (r1_filename, r2_filename, exps, primers, e);
 
