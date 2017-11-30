@@ -5,6 +5,7 @@
 #include "demultiplexing.hpp"
 #include "Parser.hpp"
 #include "edit.hpp"
+#include "IUPAC.hpp"
 
 
 using namespace std;
@@ -16,13 +17,18 @@ ofstream mistag_r1;
 ofstream mistag_r2;
 
 
+int find_with_error (string & prim_seq, string & read_start, uint errors);
+int find_0_error (string & prim_seq, string & read_start);
+
+
+uint min_dist;
 vector<int> find_primers (const vector<Sequence> & primers, const string & r1, const string & r2, const uint errors) {
 	vector<int> locations;
 	string reads[2]; reads[0] = r1; reads[1] = r2;
 
 	for (string & read : reads) {
 		int primer_idx = -1;
-		uint min_dist = errors+1;
+		min_dist = errors+1;
 
 		int primer_selected = -1;
 		int position = -1;
@@ -31,28 +37,20 @@ vector<int> find_primers (const vector<Sequence> & primers, const string & r1, c
 			primer_idx++;
 
 			string prim_seq = primer.sequence;
-
 			// Get the begining of the sequence to perform alignment
 			string read_start = read.substr(0, prim_seq.length());
-			// Align
-			compute_matrix(prim_seq, read_start);
+			
+			int tmp_position = -1;
+			if (errors == 0)
+				// strict align
+				tmp_position = find_0_error(prim_seq, read_start);
+			else
+				// Align with edit distance
+				tmp_position = find_with_error (prim_seq, read_start, errors);
 
-			uint dist = get_distance();
-			if (dist <= errors && dist < min_dist) {
-				// Add the primer found in the result.
+			if (tmp_position != -1) {
+				position = tmp_position;
 				primer_selected = primer_idx;
-				min_dist = dist;
-
-				// Compute the position to trim
-				string symbols = get_align_symbols(prim_seq, read_start);
-				// Compute global gaps to trim at the right place
-				int gaps = 0;
-				for (uint idx=0 ; idx<symbols.length() ; idx++)
-					if (symbols[idx] == '_')
-						gaps--;
-					else if (symbols[idx] == '-')
-						gaps++;
-				position = prim_seq.length()+gaps;
 			}
 		}
 
@@ -61,6 +59,40 @@ vector<int> find_primers (const vector<Sequence> & primers, const string & r1, c
 	}
 
 	return locations;
+}
+
+int find_0_error (string & prim_seq, string & read_start) {
+	for (uint idx=0 ; idx<prim_seq.length() ; idx++) {
+		if (prim_seq[idx] != read_start[idx] && !iupac_comp(prim_seq[idx], read_start[idx]))
+			return -1;
+	}
+	return prim_seq.length();
+}
+
+int find_with_error (string & prim_seq, string & read_start, uint errors) {
+	// Align
+	compute_matrix(prim_seq, read_start);
+
+	uint dist = get_distance();
+	if (dist <= errors && dist < min_dist) {
+		// Add the primer found in the result.
+		min_dist = dist;
+
+		// Compute the position to trim
+		string symbols = get_align_symbols(prim_seq, read_start);
+		// Compute global gaps to trim at the right place
+		int gaps = 0;
+		for (uint idx=0 ; idx<symbols.length() ; idx++)
+			if (symbols[idx] == '_')
+				gaps--;
+			else if (symbols[idx] == '-')
+				gaps++;
+		
+		int position = prim_seq.length()+gaps;
+
+		return position;
+	}
+	return -1;
 }
 
 

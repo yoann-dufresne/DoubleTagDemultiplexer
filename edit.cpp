@@ -54,7 +54,7 @@ void compute_matrix(const string & s1, const string & s2) {
 			// Compute the diagonal value
 			int diag = matrix[x][y];
 			// Add 1 if mismatch
-			diag += iupac_comp(s1[x], s2[y]) ? 0 : 1;
+			diag += (s1[x] == s2[y] || iupac_comp(s1[x], s2[y])) ? 0 : 1;
 
 			matrix[x+1][y+1] = min(min(ins, del), diag);
 		}

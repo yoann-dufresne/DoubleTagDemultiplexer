@@ -210,6 +210,15 @@ map<string, Experiment> parse_experiments(string exp_filename, string out_dir, s
 			+ short_filename + '_' + values[run_idx] + "_" + values[sample_idx];
 		Experiment e(values[run_idx], values[sample_idx], values[r1_idx], values[r2_idx],
 			base_filename + "_fwd.fastq", base_filename + "_rev.fastq");
+		
+		// Error if primer pair is already used
+		if (exps.find(e.fwd_name + e.rev_name) != exps.end()) {
+			cerr << "The primer pair (" << e.fwd_name << " / " << e.rev_name << ") is used a multiple time in the same run." << endl;
+			cerr << "Due to this fact, experiments are abiguous and the demultiplexer can't sort reads." << endl;
+			cerr << "Please verify your tag to samples file." << endl;
+			exit(1);
+		}
+
 		exps[e.fwd_name + e.rev_name] = e;
 	}
 
