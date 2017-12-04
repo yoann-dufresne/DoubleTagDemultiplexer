@@ -122,8 +122,12 @@ int main (int argc, char *argv[]) {
 		}
 
 	// Flags activation
-	if (mistags)
-		activate_mistags (out_dir);
+	if (mistags) {
+		if (restricted != "")
+			activate_mistags (out_dir, restricted);
+		else
+			activate_mistags (out_dir, exps.begin()->second.run);
+	}
 	if (trim)
 		activate_triming ();
 

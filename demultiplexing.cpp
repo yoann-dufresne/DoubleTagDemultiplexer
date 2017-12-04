@@ -98,11 +98,11 @@ int find_with_error (string & prim_seq, string & read_start, uint errors) {
 
 void write_mistag (Sequence & s1, Sequence & s2, string tag1, string tag2) {
 	// R1 read
-	mistag_r1 << s1.header << ";tag:" << tag1 << endl;
+	mistag_r1 << "@" << s1.header << ";tag:" << tag1 << endl;
 	mistag_r1 << s1.sequence << endl << "+" << endl << s1.quality << endl;
 
 	// R2 read
-	mistag_r2 << s2.header << ";tag:" << tag2 << endl;
+	mistag_r2 << "@" << s2.header << ";tag:" << tag2 << endl;
 	mistag_r2 << s2.sequence << endl << "+" << endl << s2.quality << endl;
 }
 
@@ -184,7 +184,7 @@ void demux (string r1_filename, string r2_filename,
 	cout << "Unasignable: " << (total-exp_count) << endl;
 }
 
-void activate_mistags (string out_dir) {
+void activate_mistags (string out_dir, string run_name) {
 	mistag = true;
 
 	// Add the directory mark
@@ -192,8 +192,8 @@ void activate_mistags (string out_dir) {
 		out_dir += "/";
 
 	// Open mistag files
-	mistag_r1.open(out_dir + "mistag_R1.fastq");
-	mistag_r2.open(out_dir + "mistag_R2.fastq");
+	mistag_r1.open(out_dir + run_name + "_mistag_R1.fastq");
+	mistag_r2.open(out_dir + run_name + "_mistag_R2.fastq");
 }
 
 void activate_triming () {

@@ -9,5 +9,5 @@ void demux (std::string r1_filename, std::string r2_filename,
 	std::map<std::string, Experiment> exps,
 	std::vector<Sequence> primers, uint errors);
 
-void activate_mistags (std::string out_dir);
+void activate_mistags (std::string out_dir, std::string run_name);
 void activate_triming ();
