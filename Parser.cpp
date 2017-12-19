@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 
 #include "Parser.hpp"
 
@@ -58,6 +59,7 @@ Sequence Parser::nextFasta () {
 	// Sequence
 	while (this->stream.is_open() && this->nextLine[0] != '>') {
 		seq.sequence += this->nextLine;
+		seq.sequence.erase(remove(seq.sequence.begin(), seq.sequence.end(), '\n'), seq.sequence.end());
 
 		if (!getline(this->stream, this->nextLine)) {
 			this->stream.close();

@@ -18,7 +18,7 @@ ofstream mistag_r2;
 
 
 int find_with_error (string & prim_seq, string & read_start, uint errors);
-int find_0_error (string & prim_seq, string & read_start);
+int find_0_error (string prim_seq, string read_start);
 
 
 uint min_dist;
@@ -61,7 +61,7 @@ vector<int> find_primers (const vector<Sequence> & primers, const string & r1, c
 	return locations;
 }
 
-int find_0_error (string & prim_seq, string & read_start) {
+int find_0_error (string prim_seq, string read_start) {
 	for (uint idx=0 ; idx<prim_seq.length() ; idx++) {
 		if (prim_seq[idx] != read_start[idx] && !iupac_comp(prim_seq[idx], read_start[idx]))
 			return -1;
@@ -180,7 +180,7 @@ void demux (string r1_filename, string r2_filename,
 	}
 
 	cout << "Input reads: " << total << endl;
-	cout << "Primers found: " << nbFound << endl;
+	cout << "No primer found: " << (total-nbFound) << endl;
 	cout << "Unasignable: " << (total-exp_count) << endl;
 }
 
