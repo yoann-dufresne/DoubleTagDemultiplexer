@@ -37,13 +37,30 @@ vector<int> find_primers (const vector<Sequence> & primers, const string & r1, c
 			primer_idx++;
 
 			string prim_seq = primer.sequence;
+
+			// Print an error on length problems
+			if (read.length() < prim_seq.length()) {
+				cerr << "Sequence too short regarding the primer" << endl;
+				cerr << "Read:   " << read << endl;
+				cerr << "Primer: " << prim_seq << endl;
+				cerr << "Skipping..." << endl;
+				continue;
+			}
+
 			// Get the begining of the sequence to perform alignment
 			string read_start = read.substr(0, prim_seq.length());
 			
 			int tmp_position = -1;
 			if (errors == 0)
 				// strict align
-				tmp_position = find_0_error(prim_seq, read_start);
+				try {
+					tmp_position = find_0_error(prim_seq, read_start);
+				} catch (const invalid_argument & ia) {
+					cerr << "Read:   " << read << endl;
+					cerr << "Primer: " << prim_seq << endl;
+					cerr << "Skipping..." << endl;
+					continue;
+				}
 			else
 				// Align with edit distance
 				tmp_position = find_with_error (prim_seq, read_start, errors);
@@ -63,8 +80,13 @@ vector<int> find_primers (const vector<Sequence> & primers, const string & r1, c
 
 int find_0_error (string prim_seq, string read_start) {
 	for (uint idx=0 ; idx<prim_seq.length() ; idx++) {
-		if (prim_seq[idx] != read_start[idx] && !iupac_comp(prim_seq[idx], read_start[idx]))
-			return -1;
+		try {
+			if (prim_seq[idx] != read_start[idx] && !iupac_comp(prim_seq[idx], read_start[idx]))
+				return -1;
+		} catch (const invalid_argument& ia) {
+			cerr << "Wrong IUPAC symbol at idx " << idx << endl;
+			throw ia;
+		}
 	}
 	return prim_seq.length();
 }

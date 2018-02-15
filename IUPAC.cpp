@@ -1,3 +1,5 @@
+#include <string>
+
 #include "IUPAC.hpp"
 
 using namespace std;
@@ -65,11 +67,9 @@ bool iupac_comp(const char & a, const char & b) {
 	uint iupac_b = iupac_2_uint(b);
 
 	if (iupac_a == 0) {
-		cerr << a << " is not a IUPAC symbol !" << endl;
-		exit (1);
+		throw invalid_argument(string(1, a) + string(" is not a IUPAC symbol"));
 	} else if (iupac_b == 0) {
-		cerr << b << " is not a IUPAC symbol !" << endl;
-		exit (1);
+		throw invalid_argument(string(1, b) + string(" is not a IUPAC symbol"));
 	}
 
 	return matrix[iupac_a -1][iupac_b -1];
