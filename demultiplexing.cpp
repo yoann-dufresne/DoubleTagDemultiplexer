@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <stdexcept>
 
 #include "demultiplexing.hpp"
 #include "Parser.hpp"
