@@ -164,6 +164,27 @@ void demux (string r1_filename, string r2_filename,
 				r1.quality = r1.quality.substr(found[1]);
 				r2.sequence = r2.sequence.substr(found[3]);
 				r2.quality = r2.quality.substr(found[3]);
+
+				bool check_end = true;
+				if (check_end) {
+					// Create reverse complement of each sequence
+					Sequence * r1rc = r1.revcomp();
+					Sequence * r2rc = r2.revcomp();
+					// Check for the primers at the beginning of the reverse complemented read
+					found = find_primers(primers, r1rc->sequence, r2rc->sequence, errors);
+					free(r1rc);
+					free(r2rc);
+
+					// Trim the reverse complement primer if founded.
+					if (found[0] != -1) {
+						r1.sequence = r1.sequence.substr(0, r1.sequence.length()-found[1]-1);
+						r1.quality = r1.quality.substr(0, r1.quality.length()-found[1]-1);
+					}
+					if (found[2] != -1) {
+						r2.sequence = r2.sequence.substr(0, r2.sequence.length()-found[3]-1);
+						r2.quality = r2.quality.substr(0, r2.quality.length()-found[3]-1);
+					}
+				}
 			}
 
 			// R1 == fwd

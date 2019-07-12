@@ -12,6 +12,8 @@ public:
 
 	Sequence();
 	Sequence(const Sequence& seq);
+
+	Sequence * revcomp();
 };
 
 
