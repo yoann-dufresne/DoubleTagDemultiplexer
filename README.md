@@ -53,6 +53,8 @@ To not fill your current directory with many FASTQ files, you can define an outp
 * **-d output_directory**: Write all the demux files in the directory. If the directory is not present, it is created.
 * **-m**: Write unassigned reads in files named mistag_R1.fastq (_R2).
 * **-t**: Trim the primers from the sequence.
+* **-te**: Trim also the end of each read if a reverse-complemented primer is found.
+* **-ml length**: Output the trimed reads with length under length in the empty.fasta file.
 * **-rl lib_name**: Restrict the demultiplexing to only one library.
 
 ## Download and compile
