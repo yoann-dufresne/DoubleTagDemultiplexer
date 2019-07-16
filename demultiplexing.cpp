@@ -132,7 +132,7 @@ void write_mistag (Sequence & s1, Sequence & s2, string tag1, string tag2) {
 
 void demux (string r1_filename, string r2_filename,
 	map<string, Experiment> exps,
-	vector<Sequence> primers, uint errors) {
+	vector<Sequence> primers, uint errors, bool check_end) {
 
 	// For all the paired end reads
 	Parser r1_parse (r1_filename), r2_parse(r2_filename);
@@ -164,8 +164,7 @@ void demux (string r1_filename, string r2_filename,
 				r1.quality = r1.quality.substr(found[1]);
 				r2.sequence = r2.sequence.substr(found[3]);
 				r2.quality = r2.quality.substr(found[3]);
-
-				bool check_end = true;
+				
 				if (check_end) {
 					// Create reverse complement of each sequence
 					Sequence * r1rc = r1.revcomp();
@@ -178,10 +177,14 @@ void demux (string r1_filename, string r2_filename,
 					// Trim the reverse complement primer if founded.
 					if (found[0] != -1) {
 						r1.sequence = r1.sequence.substr(0, r1.sequence.length()-found[1]-1);
+						if (r1.sequence.length() == 0)
+							cerr << "Problem with empty read " << r1.header << endl;
 						r1.quality = r1.quality.substr(0, r1.quality.length()-found[1]-1);
 					}
 					if (found[2] != -1) {
 						r2.sequence = r2.sequence.substr(0, r2.sequence.length()-found[3]-1);
+						if (r2.sequence.length() == 0)
+							cerr << "Problem with empty read " << r2.header << endl;
 						r2.quality = r2.quality.substr(0, r2.quality.length()-found[3]-1);
 					}
 				}

@@ -58,6 +58,7 @@ int main (int argc, char *argv[]) {
 	string restricted = "";
 	bool mistags = false;
 	bool trim = false;
+	bool trim_end = false;
 	uint e = 0;
 
 	if (argc == 1) {
@@ -97,6 +98,8 @@ int main (int argc, char *argv[]) {
 			e = atoi(argv[++idx]);
 		} else if (arg == "-rl" || arg == "-restrict-library") {
 			restricted = string(argv[++idx]);
+		} else if (arg == "-te" || arg == "-trim_end_primers") {
+			trim_end = true;
 		} else {
 			cerr << "No argument called " << arg << endl;
 			return 1;
@@ -132,7 +135,7 @@ int main (int argc, char *argv[]) {
 		activate_triming ();
 
 	// Demultiplex
-	demux (r1_filename, r2_filename, exps, primers, e);
+	demux (r1_filename, r2_filename, exps, primers, e, trim_end);
 
 	return 0;
 }
