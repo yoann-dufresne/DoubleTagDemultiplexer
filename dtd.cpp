@@ -60,6 +60,7 @@ int main (int argc, char *argv[]) {
 	bool trim = false;
 	bool trim_end = false;
 	uint e = 0;
+	uint min_len = 0;
 
 	if (argc == 1) {
 		printHelp();
@@ -96,10 +97,12 @@ int main (int argc, char *argv[]) {
 			trim = true;
 		} else if (arg == "-e" || arg == "-errors") {
 			e = atoi(argv[++idx]);
-		} else if (arg == "-rl" || arg == "-restrict-library") {
+		} else if (arg == "-rl" || arg == "-restrict_library") {
 			restricted = string(argv[++idx]);
 		} else if (arg == "-te" || arg == "-trim_end_primers") {
 			trim_end = true;
+		} else if (arg == "-ml" || arg == "-minimum_length") {
+			min_len = atoi(argv[++idx]);
 		} else {
 			cerr << "No argument called " << arg << endl;
 			return 1;
@@ -135,7 +138,7 @@ int main (int argc, char *argv[]) {
 		activate_triming ();
 
 	// Demultiplex
-	demux (r1_filename, r2_filename, exps, primers, e, trim_end);
+	demux (r1_filename, r2_filename, exps, primers, e, trim_end, min_len);
 
 	return 0;
 }

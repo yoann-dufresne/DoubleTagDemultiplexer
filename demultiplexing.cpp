@@ -16,6 +16,7 @@ bool mistag = false;
 bool trim = false;
 ofstream mistag_r1;
 ofstream mistag_r2;
+ofstream empty;
 
 
 int find_with_error (string & prim_seq, string & read_start, uint errors);
@@ -119,6 +120,14 @@ int find_with_error (string & prim_seq, string & read_start, uint errors) {
 }
 
 
+void write_empty (Sequence & s1, Sequence & s2) {
+	empty << ">" << s1.header << " from_R1" << endl;
+	empty << s1.sequence << endl;
+	empty << ">" << s2.header << " from_R2" << endl;
+	empty << s2.sequence << endl;
+}
+
+
 void write_mistag (Sequence & s1, Sequence & s2, string tag1, string tag2) {
 	// R1 read
 	mistag_r1 << "@" << s1.header << ";tag:" << tag1 << endl;
@@ -132,7 +141,7 @@ void write_mistag (Sequence & s1, Sequence & s2, string tag1, string tag2) {
 
 void demux (string r1_filename, string r2_filename,
 	map<string, Experiment> exps,
-	vector<Sequence> primers, uint errors, bool check_end) {
+	vector<Sequence> primers, uint errors, bool check_end, uint min_length) {
 
 	// For all the paired end reads
 	Parser r1_parse (r1_filename), r2_parse(r2_filename);
@@ -140,6 +149,7 @@ void demux (string r1_filename, string r2_filename,
 	r2_parse.verbose = true;
 	int nbFound = 0;
 	int exp_count = 0;
+	int empty_count = 0;
 	int total = 0;
 	while (r1_parse.hasNext() && r2_parse.hasNext()) {
 		Sequence r1, r2;
@@ -164,7 +174,7 @@ void demux (string r1_filename, string r2_filename,
 				r1.quality = r1.quality.substr(found[1]);
 				r2.sequence = r2.sequence.substr(found[3]);
 				r2.quality = r2.quality.substr(found[3]);
-				
+
 				if (check_end) {
 					// Create reverse complement of each sequence
 					Sequence * r1rc = r1.revcomp();
@@ -190,20 +200,26 @@ void demux (string r1_filename, string r2_filename,
 				}
 			}
 
-			// R1 == fwd
-			auto it_fwd = exps.find(p1.header+p2.header);
-			if (it_fwd != exps.end()) {
-				exp_count++;
-				it_fwd->second.addReads(r1, r2);
+			// Extract empty reads
+			if (mistag && (r1.sequence.length() < min_length || r2.sequence.length() < min_length)) {
+				write_empty(r1, r1);
+				empty_count++;
 			} else {
-				auto it_rev = exps.find(p2.header+p1.header);
-				if (it_rev != exps.end()) {
+				// R1 == fwd
+				auto it_fwd = exps.find(p1.header+p2.header);
+				if (it_fwd != exps.end()) {
 					exp_count++;
-					it_rev->second.addReads(r2, r1);
+					it_fwd->second.addReads(r1, r2);
 				} else {
-					write_mistag(r1, r2, primers[idx1].header, primers[idx2].header);
+					auto it_rev = exps.find(p2.header+p1.header);
+					if (it_rev != exps.end()) {
+						exp_count++;
+						it_rev->second.addReads(r2, r1);
+					} else {
+						write_mistag(r1, r2, primers[idx1].header, primers[idx2].header);
+					}
 				}
-			}			
+			}
 		} else if (mistag) {
 			// Save the mistag
 			write_mistag(
@@ -224,10 +240,12 @@ void demux (string r1_filename, string r2_filename,
 	if (mistag) {
 		mistag_r1.close();
 		mistag_r2.close();
+		empty.close();
 	}
 
 	cout << "Input reads: " << total << endl;
-	cout << "No primer found: " << (total-nbFound) << endl;
+	cout << "Empty reads: " << empty_count << endl;
+	cout << "No primer found: " << (total-nbFound-empty_count) << endl;
 	cout << "Unasignable: " << (total-exp_count) << endl;
 }
 
@@ -241,6 +259,7 @@ void activate_mistags (string out_dir, string run_name) {
 	// Open mistag files
 	mistag_r1.open(out_dir + run_name + "_mistag_R1.fastq");
 	mistag_r2.open(out_dir + run_name + "_mistag_R2.fastq");
+	empty.open(out_dir + run_name + "_empty.fasta");
 }
 
 void activate_triming () {
