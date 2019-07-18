@@ -201,7 +201,7 @@ void demux (string r1_filename, string r2_filename,
 			}
 
 			// Extract empty reads
-			if (mistag && (r1.sequence.length() < min_length || r2.sequence.length() < min_length)) {
+			if (r1.sequence.length() < min_length || r2.sequence.length() < min_length) {
 				write_empty(r1, r1);
 				empty_count++;
 			} else {
@@ -240,13 +240,19 @@ void demux (string r1_filename, string r2_filename,
 	if (mistag) {
 		mistag_r1.close();
 		mistag_r2.close();
-		empty.close();
 	}
+	empty.close();
 
 	cout << "Input reads: " << total << endl;
 	cout << "Empty reads: " << empty_count << endl;
 	cout << "No primer found: " << (total-nbFound-empty_count) << endl;
 	cout << "Unasignable: " << (total-exp_count) << endl;
+}
+
+void open_empty_file(string out_dir, string run_name) {
+	if (out_dir[out_dir.length() - 1] != '/')
+		out_dir += "/";
+	empty.open(out_dir + run_name + "_empty.fasta");
 }
 
 void activate_mistags (string out_dir, string run_name) {
@@ -259,7 +265,6 @@ void activate_mistags (string out_dir, string run_name) {
 	// Open mistag files
 	mistag_r1.open(out_dir + run_name + "_mistag_R1.fastq");
 	mistag_r2.open(out_dir + run_name + "_mistag_R2.fastq");
-	empty.open(out_dir + run_name + "_empty.fasta");
 }
 
 void activate_triming () {

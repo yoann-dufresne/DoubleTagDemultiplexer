@@ -128,11 +128,14 @@ int main (int argc, char *argv[]) {
 		}
 
 	// Flags activation
-	if (mistags) {
-		if (restricted != "")
+	if (restricted != "") {
+		if (mistags)
 			activate_mistags (out_dir, restricted);
-		else
+		open_empty_file(out_dir, restricted);
+	} else {
+		if (mistags)
 			activate_mistags (out_dir, exps.begin()->second.run);
+		open_empty_file(out_dir, exps.begin()->second.run);
 	}
 	if (trim)
 		activate_triming ();
