@@ -217,7 +217,7 @@ map<string, Experiment> parse_experiments(string exp_filename, string out_dir, s
 
 		string short_filename = exp_filename.substr(0, exp_filename.find_last_of("."));
 		if (short_filename.find_last_of("/") != string::npos)
-			short_filename = short_filename.substr(short_filename.find_last_of("/"));
+			short_filename = short_filename.substr(short_filename.find_last_of("/")+1);
 
 		string base_filename =  out_dir + (out_dir[out_dir.size()-1] == '/' ? "" : "/")
 			+ short_filename + '_' + values[run_idx] + "_" + values[sample_idx];
