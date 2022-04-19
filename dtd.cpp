@@ -150,6 +150,11 @@ int main (int argc, char *argv[]) {
 vector<string> split (string word, string delim) {
 	vector<string> words;
 
+	// Clean the string
+	char last_char = word[word.length()-1];
+	while (last_char == '\r' or last_char == ' ' or last_char == '\t' or last_char == '\n')
+		word.pop_back();
+
 	size_t pos = 0;
 	string token;
 	while ((pos = word.find(delim)) != string::npos) {
